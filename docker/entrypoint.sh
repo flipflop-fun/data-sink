@@ -21,6 +21,13 @@ mkdir -p "${MARKER_DIR}"
 echo "[entrypoint] Using DSN: ${DSN}"
 echo "[entrypoint] Using manifest: ${MANIFEST}"
 
+# 打印二进制版本，便于排查 CLI 选项
+(substreams-sink-sql version || substreams-sink-sql --version) 2>/dev/null || true
+
+# 统一构造旗标（注意拼写：mistmatch）
+HASH_FLAG="--on-module-hash-mistmatch=${ON_MODULE_HASH_MISTMATCH:-warn}"
+echo "[entrypoint] Module hash mistmatch policy: ${ON_MODULE_HASH_MISTMATCH:-warn}"
+
 # 简单等待 DB 可达（可调次数与间隔）
 RETRIES="${DB_WAIT_RETRIES:-30}"
 SLEEP="${DB_WAIT_SLEEP_SEC:-2}"
@@ -43,7 +50,8 @@ case "${RUN_MODE:-run}" in
     ;;
   run)
     echo "[entrypoint] RUN_MODE=run, starting sink..."
-    exec substreams-sink-sql run "${DSN}" "${MANIFEST}" --on-module-hash-mistmatch=warn
+    echo "[entrypoint] Exec: substreams-sink-sql run ${HASH_FLAG} \"${DSN}\" \"${MANIFEST}\""
+    exec substreams-sink-sql run ${HASH_FLAG} "${DSN}" "${MANIFEST}"
     ;;
   *)
     echo "[entrypoint] Unknown RUN_MODE=${RUN_MODE}, expected 'setup' or 'run'" >&2

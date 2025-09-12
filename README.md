@@ -29,6 +29,17 @@ docker-compose up -d postgres
 docker-compose -f docker-compose.yml build --pull
 ```
 
+If the `entrypoint.sh` updated, you need to rebuild the docker image:
+```
+docker compose build --no-cache flipflop-indexer-mainnet
+docker compose up -d --force-recreate --no-deps flipflop-indexer-mainnet
+
+or
+
+docker compose build --no-cache flipflop-indexer-devnet
+docker compose up -d --force-recreate --no-deps flipflop-indexer-devnet
+```
+
 ## Run substreams indexer on devnet
 ```
 // Step 1: Initialize database tables and indexes from `schema.sql`
@@ -36,6 +47,8 @@ docker-compose run --rm -e RUN_MODE=setup flipflop-indexer-devnet
 
 // Step 2: Run indexer
 docker-compose up -d flipflop-indexer-devnet
+
+docker-compose logs -f flipflop-indexer-devnet
 
 // Step 3: Run PostGraphile to support graphql
 docker-compose up -d flipflop-graph-devnet
@@ -48,6 +61,8 @@ docker-compose run --rm -e RUN_MODE=setup flipflop-indexer-mainnet
 
 // Step 2: Run indexer
 docker-compose up -d flipflop-indexer-mainnet
+
+docker-compose logs -f flipflop-indexer-mainnet
 
 // Step 3: Run PostGraphile to support graphql
 docker-compose up -d flipflop-graph-mainnet

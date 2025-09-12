@@ -43,7 +43,7 @@ case "${RUN_MODE:-run}" in
     ;;
   run)
     echo "[entrypoint] RUN_MODE=run, starting sink..."
-    exec substreams-sink-sql run --on-module-hash-mistmatch=warn "${DSN}" "${MANIFEST}"
+    exec substreams-sink-sql run "${DSN}" "${MANIFEST}" --on-module-hash-mistmatch=warn
     ;;
   *)
     echo "[entrypoint] Unknown RUN_MODE=${RUN_MODE}, expected 'setup' or 'run'" >&2

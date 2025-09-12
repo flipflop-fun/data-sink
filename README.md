@@ -5,11 +5,12 @@ brew install protobuf
 brew install streamingfast/tap/substreams-sink-sql
 ```
 
-## Build the substreams and sink
+## Build the substreams and sink from yaml
 ```
 substreams build --manifest substreams-devnet.yaml
 substreams build --manifest substreams-mainnet.yaml
 ```
+You will have two spkg files: `flipflop-indexer-devnet-v0.1.0.spkg` and `flipflop-indexer-mainnet-v0.1.0.spkg`
 
 ## Prepare the environment
 Get substreams API key from https://thegraph.market.

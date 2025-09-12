@@ -32,7 +32,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME_DEVNET}
-      MANIFEST: /app/substreams-devnet.yaml
+      MANIFEST: /app/flipflop-indexer-devnet-v0.1.0.spkg
       SUBSTREAMS_API_TOKEN: ${SUBSTREAMS_API_TOKEN_DEVNET}
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -56,7 +56,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME_MAINNET}
-      MANIFEST: /app/substreams-mainnet.yaml
+      MANIFEST: /app/flipflop-indexer-mainnet-v0.1.0.spkg
       SUBSTREAMS_API_TOKEN: ${SUBSTREAMS_API_TOKEN_MAINNET}
     extra_hosts:
       - "host.docker.internal:host-gateway"

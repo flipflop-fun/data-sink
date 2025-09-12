@@ -584,7 +584,7 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
 
     for e in data.update_token_metadata_event_list {
         let id = format!("{}_update_{}", e.mint, e.metadata_account).to_lowercase();
-        let row = tables.create_row("update_token_metadata_event_entity", id.clone());
+        let row = tables.upsert_row("update_token_metadata_event_entity", id.clone());
         row.set("id", &id)
            .set("block_height", e.block_height)
            .set("tx_id", &e.tx_id)
@@ -594,7 +594,7 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
            .set("metadata_account", &e.metadata_account)
            .set("timestamp", e.timestamp);
         if let Some(meta) = e.metadata {
-            let uri = meta.uri.clone();
+            let uri = meta.uri.trim_matches(|c: char| c == '`' || c.is_whitespace()).to_string();
             row.set("token_name", meta.name)
                .set("token_symbol", meta.symbol)
                .set("token_uri", uri.clone());

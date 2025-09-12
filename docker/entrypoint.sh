@@ -50,8 +50,8 @@ case "${RUN_MODE:-run}" in
     ;;
   run)
     echo "[entrypoint] RUN_MODE=run, starting sink..."
-    echo "[entrypoint] Exec: substreams-sink-sql run ${HASH_FLAG} \"${DSN}\" \"${MANIFEST}\""
-    exec substreams-sink-sql run ${HASH_FLAG} "${DSN}" "${MANIFEST}"
+    echo "[entrypoint] Exec: substreams-sink-sql run \"\${DSN}\" \"\${MANIFEST}\" ${HASH_FLAG}"
+    exec substreams-sink-sql run "${DSN}" "${MANIFEST}" ${HASH_FLAG}
     ;;
   *)
     echo "[entrypoint] Unknown RUN_MODE=${RUN_MODE}, expected 'setup' or 'run'" >&2

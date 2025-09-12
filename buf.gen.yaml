@@ -1,0 +1,8 @@
+
+# 仅保留 neoeinstein-prost 插件，去掉 crate 版本，避免重复生成 mod.rs
+version: v1
+plugins:
+  - plugin: buf.build/community/neoeinstein-prost:v0.2.2
+    out: ./src/pb
+    opt:
+      - file_descriptor_set=false

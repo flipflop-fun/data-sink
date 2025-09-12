@@ -1,0 +1,282 @@
+syntax = "proto3";
+
+package substreams.v1.program;
+
+message Data {
+    repeated CloseTokenEvent close_token_event_list = 1;
+    repeated InitializeTokenEvent initialize_token_event_list = 3;
+    repeated MintEvent mint_event_list = 4;
+    repeated RefundEvent refund_event_list = 5;
+    repeated SetRefererCodeEvent set_referer_code_event_list = 6;
+    repeated UpdateTokenMetadataEvent update_token_metadata_event_list = 8;
+    repeated DelegateValueManager delegate_value_manager_list = 11;
+    repeated ProxyBurnLpTokens proxy_burn_lp_tokens_list = 15;
+    repeated ProxyDeposit proxy_deposit_list = 16;
+    repeated ProxySwapBaseIn proxy_swap_base_in_list = 18;
+    repeated ProxySwapBaseOut proxy_swap_base_out_list = 19;
+    repeated ProxyWithdraw proxy_withdraw_list = 20;
+}
+
+message CloseTokenEvent {
+    string tx_id = 1;
+    string mint = 2;
+    string config_account = 3;
+    string token_vault = 4;
+    uint64 block_height = 5;
+}
+
+message InitializeTokenEvent {
+      TokenMetadata metadata = 1;
+      InitializeTokenConfigData init_config_data = 2;
+      string admin = 3;
+      uint64 token_id = 4;
+      string mint = 5;
+      string config_account = 6;
+      string metadata_account = 7;
+      uint64 timestamp = 8;
+      string token_vault = 9;
+      TokenMintState mint_state_data = 10;
+      string value_manager = 11;
+      string wsol_vault = 12;
+      string tx_id = 13;
+      uint64 block_height = 14;
+}
+
+message MintEvent {
+      string sender = 1;
+      string mint = 2;
+      string config_account = 3;
+      string token_vault = 4;
+      string referral_account = 5;
+      string referrer_main = 6;
+      string referrer_ata = 7;
+      string refund_account = 8;
+      uint64 timestamp = 9;
+      TokenMintState mint_state_data = 10;
+      uint64 mint_fee = 11;
+      uint64 referrer_fee = 12;
+      string wsol_vault = 13;
+      string tx_id = 14;
+      uint64 block_height = 15;
+}
+
+message RefundEvent {
+      string sender = 1;
+      string mint = 2;
+      string refund_account = 3;
+      string config_account = 4;
+      string token_vault = 5;
+      string token_ata = 6;
+      uint64 timestamp = 7;
+      uint64 supply = 8;
+      uint64 total_tokens = 9;
+      uint64 total_mint_fee = 10;
+      uint64 refund_fee = 11;
+      uint64 refund_amount_including_fee = 12;
+      uint64 burn_amount_from_vault = 13;
+      uint64 burn_amount_from_user = 14;
+      string tx_id = 15;
+      uint64 block_height = 16;
+}
+
+message SetRefererCodeEvent {
+      string mint = 1;
+      string referral_account = 2;
+      string referrer_ata = 3;
+      string payer = 4;
+      string code_hash = 5;
+      uint64 active_timestamp = 6;
+      string tx_id = 7;
+      uint64 block_height = 8;
+}
+
+message UpdateTokenMetadataEvent {
+      TokenMetadata metadata = 1;
+      string admin = 2;
+      string mint = 3;
+      string config_account = 4;
+      string metadata_account = 5;
+      uint64 timestamp = 6;
+      string tx_id = 7;
+      uint64 block_height = 8;
+}
+
+message DelegateValueManager {
+  string trx_hash = 1;
+    string token_name = 2;
+    string token_symbol = 3;
+    string new_value_manager = 4;
+    string acct_admin = 5;
+    string acct_mint = 6;
+    string acct_config_account = 7;
+    uint64 block_height = 8;
+}
+
+message ProxyBurnLpTokens {
+  string trx_hash = 1;
+  string token_name = 2;
+  string token_symbol = 3;
+  uint64 amount = 4;
+  string acct_admin = 5;
+  string acct_mint = 6;
+  string acct_config_account = 7;
+  string acct_owner_lp_token = 8;
+  string acct_lp_mint = 9;
+  uint64 block_timestamp = 10;
+  uint64 block_height = 11;
+}
+message ProxyDeposit {
+  string trx_hash = 1;
+  string token_name = 2;
+  string token_symbol = 3;
+  uint64 lp_token_amount = 4;
+  uint64 maximum_token_0_amount = 5;
+  uint64 maximum_token_1_amount = 6;
+  string acct_owner = 7;
+  string acct_mint = 8;
+  string acct_config_account = 9;
+  string acct_authority = 10;
+  string acct_pool_state = 11;
+  string acct_owner_lp_token = 12;
+  string acct_token_0_account = 13;
+  string acct_token_1_account = 14;
+  string acct_token_0_vault = 15;
+  string acct_token_1_vault = 16;
+  string acct_vault_0_mint = 17;
+  string acct_vault_1_mint = 18;
+  string acct_lp_mint = 19;
+  uint64 block_timestamp = 20;
+  uint64 block_height = 21;
+}
+// message ProxyInitialize {
+//   string trx_hash = 1;
+//   string token_name = 2;
+//   string token_symbol = 3;
+//   uint64 init_amount_0 = 4;
+//   uint64 init_amount_1 = 5;
+//   uint64 open_time = 6;
+//   string acct_creator = 7;
+//   string acct_mint = 8;
+//   string acct_config_account = 9;
+//   string acct_amm_config = 10;
+//   string acct_authority = 11;
+//   string acct_pool_state = 12;
+//   string acct_token_0_mint = 13;
+//   string acct_token_1_mint = 14;
+//   string acct_lp_mint = 15;
+//   string acct_creator_token_0 = 16;
+//   string acct_creator_token_1 = 17;
+//   string acct_creator_lp_token = 18;
+//   string acct_token_0_vault = 19;
+//   string acct_token_1_vault = 20;
+//   string acct_observation_state = 21;
+//   string acct_token_0_program = 22;
+//   string acct_token_1_program = 23;
+//   uint64 block_timestamp = 24;
+// }
+message ProxySwapBaseIn {
+  string trx_hash = 1;
+  string token_name = 2;
+  string token_symbol = 3;
+  uint64 amount_in = 4;
+  uint64 minimum_amount_out = 5;
+  string acct_payer = 6;
+  string acct_mint = 7;
+  string acct_config_account = 8;
+  string acct_authority = 9;
+  string acct_amm_config = 10;
+  string acct_pool_state = 11;
+  string acct_input_token_account = 12;
+  string acct_output_token_account = 13;
+  string acct_input_vault = 14;
+  string acct_output_vault = 15;
+  string acct_input_token_program = 16;
+  string acct_output_token_program = 17;
+  string acct_input_token_mint = 18;
+  string acct_output_token_mint = 19;
+  string acct_observation_state = 20;
+  uint64 block_timestamp = 21;
+  uint64 block_height = 22;
+}
+message ProxySwapBaseOut {
+  string trx_hash = 1;
+  string token_name = 2;
+  string token_symbol = 3;
+  uint64 max_amount_in = 4;
+  uint64 amount_out = 5;
+  string acct_payer = 6;
+  string acct_mint = 7;
+  string acct_config_account = 8;
+  string acct_authority = 9;
+  string acct_amm_config = 10;
+  string acct_pool_state = 11;
+  string acct_input_token_account = 12;
+  string acct_output_token_account = 13;
+  string acct_input_vault = 14;
+  string acct_output_vault = 15;
+  string acct_input_token_program = 16;
+  string acct_output_token_program = 17;
+  string acct_input_token_mint = 18;
+  string acct_output_token_mint = 19;
+  string acct_observation_state = 20;
+  uint64 block_timestamp = 21;
+  uint64 block_height = 22;
+}
+message ProxyWithdraw {
+  string trx_hash = 1;
+  string token_name = 2;
+  string token_symbol = 3;
+  uint64 lp_token_amount = 4;
+  uint64 minimum_token_0_amount = 5;
+  uint64 minimum_token_1_amount = 6;
+  string acct_owner = 7;
+  string acct_mint = 8;
+  string acct_config_account = 9;
+  string acct_authority = 10;
+  string acct_pool_state = 11;
+  string acct_owner_lp_token = 12;
+  string acct_token_0_account = 13;
+  string acct_token_1_account = 14;
+  string acct_token_0_vault = 15;
+  string acct_token_1_vault = 16;
+  string acct_vault_0_mint = 17;
+  string acct_vault_1_mint = 18;
+  string acct_lp_mint = 19;
+  uint64 block_timestamp = 20;
+  uint64 block_height = 21;
+}
+
+message TokenMintState {
+      uint64 supply = 1;
+      uint32 current_era = 2;
+      uint64 current_epoch = 3;
+      uint64 elapsed_seconds_epoch = 4;
+      uint64 start_timestamp_epoch = 5;
+      double last_difficulty_coefficient_epoch = 6;
+      double difficulty_coefficient_epoch = 7;
+      uint64 mint_size_epoch = 8;
+      uint64 quantity_minted_epoch = 9;
+      uint64 target_mint_size_epoch = 10;
+      uint64 total_mint_fee = 11;
+      uint64 total_referrer_fee = 12;
+      uint64 total_tokens = 13;
+      uint32 graduate_epoch = 14;
+}
+
+message InitializeTokenConfigData {
+      uint32 target_eras = 1;
+      uint64 epoches_per_era = 2;
+      uint64 target_seconds_per_epoch = 3;
+      double reduce_ratio = 4;
+      uint64 initial_mint_size = 5;
+      uint64 initial_target_mint_size_per_epoch = 6;
+      uint64 fee_rate = 7;
+      double liquidity_tokens_ratio = 8;
+      uint64 start_timestamp = 9;
+}
+
+message TokenMetadata {
+      string symbol = 1;
+      string name = 2;
+      string uri = 3;
+}

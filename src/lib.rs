@@ -450,12 +450,10 @@ fn map_option_token_mint_state_data(value: Option<idl::idl::program::types::Toke
     }
 }
 
-// 新增：将 Data -> DatabaseChanges 的转换
 #[substreams::handlers::map]
 fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
     let mut tables = Tables::new();
 
-    // InitializeTokenEventEntity（主行，后续事件会更新它）
     for e in data.initialize_token_event_list {
         let id = e.mint.to_lowercase();
         let row = tables.upsert_row("initialize_token_event_entity", id.clone());
@@ -508,7 +506,6 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
         }
     }
 
-    // MintTokenEntity + 回写 InitializeTokenEventEntity 的最新 MintState
     for e in data.mint_event_list {
         let id = format!("{}_{}_mint_{}", e.mint, e.sender, e.tx_id).to_lowercase();
         let row = tables.create_row("mint_token_entity", id.clone());
@@ -544,7 +541,6 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
                .set("total_tokens", ms.total_tokens)
                .set("graduate_epoch", ms.graduate_epoch);
 
-            // 同步到 InitializeTokenEventEntity（用 upsert/update 都可，这里 update）
             let init_row = tables.update_row("initialize_token_event_entity", e.mint.to_lowercase());
             init_row.set("supply", ms.supply)
                 .set("current_era", ms.current_era)
@@ -562,9 +558,6 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
                 .set("graduate_epoch", ms.graduate_epoch);
         }
 
-        // ######
-        // 注意：HoldersEntity 需要“累加”，SQL Sink 的 DatabaseChanges 不支持直接自增，
-        // 建议用 Store 聚合后在这里 set 最终值（或在 schema.sql 里用数据库端 upsert 表达式实现自增）
         // Add mint size to Holders entity (accumulative via DB upsert expression)
         if let Some(ms) = e.mint_state_data.clone() {
             let holders_id = format!("{}_{}", e.mint, e.sender).to_lowercase();
@@ -576,7 +569,6 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
         }
     }
 
-    // SetRefererCodeEventEntity（去重 upsert）
     for e in data.set_referer_code_event_list {
         let id = e.code_hash.to_lowercase();
         let row = tables.upsert_row("set_referer_code_event_entity", id.clone());
@@ -590,7 +582,6 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
            .set("active_timestamp", e.active_timestamp);
     }
 
-    // UpdateTokenMetadataEventEntity + 回写 InitializeTokenEventEntity 的元数据
     for e in data.update_token_metadata_event_list {
         let id = format!("{}_update_{}", e.mint, e.metadata_account).to_lowercase();
         let row = tables.create_row("update_token_metadata_event_entity", id.clone());
@@ -614,7 +605,6 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
         }
     }
 
-    // CloseTokenEventEntity + 回写 InitializeTokenEventEntity 的状态
     for e in data.close_token_event_list {
         let id = format!("{}_close_{}", e.mint, e.tx_id).to_lowercase();
         let row = tables.create_row("close_token_event_entity", id.clone());
@@ -629,7 +619,6 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
         init_row.set("status", 2i32); // Set to close
     }
 
-    // RefundEventEntity + 回写 InitializeTokenEventEntity 的累计字段
     for e in data.refund_event_list {
         let id = format!("{}_{}_refund_{}", e.mint, e.sender, e.tx_id).to_lowercase();
         let row = tables.create_row("refund_event_entity", id.clone());
@@ -656,8 +645,6 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
                 .set("total_mint_fee", e.total_mint_fee)
                 .set("total_tokens", e.total_tokens);
 
-        // ######
-        // 持仓扣减：同上，建议用 Store 做累计再 set。这里不直接做，以免状态不一致。
         // remove the refund amount from the holder (accumulative via DB upsert expression)
         let holders_id = format!("{}_{}", e.mint, e.sender).to_lowercase();
         let row = tables.upsert_row("holders_entity", holders_id.clone());
@@ -667,13 +654,11 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
            .set("amount", -(e.burn_amount_from_user as i64));
     }
 
-    // DelegateValueManager -> 更新 InitializeTokenEventEntity.value_manager
     for e in data.delegate_value_manager_list {
         let init_row = tables.update_row("initialize_token_event_entity", e.acct_mint.to_lowercase());
         init_row.set("value_manager", e.new_value_manager);
     }
 
-    // 代理事件：Liquidity（Deposit/Withdraw）
     for e in data.proxy_deposit_list {
         let id = format!("{}_proxy_deposit_{}", e.acct_mint, e.trx_hash).to_lowercase();
         let row = tables.create_row("proxy_liquidity_event_entity", id.clone());
@@ -714,7 +699,6 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
            .set("block_timestamp", e.block_timestamp);
     }
 
-    // 代理事件：Swap Base In/Out
     for e in data.proxy_swap_base_in_list {
         let id = format!("{}_proxy_swap_in_{}", e.acct_mint, e.trx_hash).to_lowercase();
         let row = tables.create_row("proxy_swap_base_event_entity", id.clone());
@@ -751,7 +735,6 @@ fn db_out(data: Data) -> Result<DatabaseChanges, Error> {
            .set("block_timestamp", e.block_timestamp);
     }
 
-    // 代理事件：Burn LP
     for e in data.proxy_burn_lp_tokens_list {
         let id = format!("{}_proxy_burn_{}", e.acct_mint, e.trx_hash).to_lowercase();
         let row = tables.create_row("proxy_burn_lp_tokens_event_entity", id.clone());

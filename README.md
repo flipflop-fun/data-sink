@@ -53,3 +53,6 @@ docker-compose up -d flipflop-indexer-mainnet
 docker-compose up -d flipflop-graph-mainnet
 ```
 
+## Problem solving
+If you get Error: `ResourceExhausted desc = Concurrent stream limit exceeded`, please try to get a new API key from https://thegraph.market with different account.
+

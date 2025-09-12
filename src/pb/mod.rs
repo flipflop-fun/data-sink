@@ -10,7 +10,6 @@ pub mod sf {
         }
     }
 
-    // 新增：暴露 sf::substreams 相关生成文件
     pub mod substreams {
         include!("sf.substreams.rs");
         pub mod solana {
@@ -21,7 +20,6 @@ pub mod sf {
     }
 }
 
-// 新增：暴露你自定义的 substreams.v1.program 生成文件
 pub mod substreams {
     pub mod v1 {
         pub mod program {

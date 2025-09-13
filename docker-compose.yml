@@ -121,7 +121,26 @@ services:
       - "${GRAPH_PORT_MAINNET:-5050}:${GRAPH_PORT_MAINNET:-5050}"
     restart: unless-stopped
 
+  caddy:
+    image: caddy:2
+    container_name: flipflop-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - flipflop-graph-mainnet
+      - flipflop-graph-devnet
+    # 与其他服务同网络即可（默认即可）
+  restart: unless-stopped
+
 volumes:
   postgres-data: {}
   devnet-data: {}
   mainnet-data: {}
+  caddy_data:
+  caddy_config:

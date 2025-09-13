@@ -91,7 +91,7 @@ services:
          psql \"$$DB_DSN\" -v ON_ERROR_STOP=1 -c \"COMMENT ON TABLE public.cursors IS E'@omit';\" || true && \
          npx --yes postgraphile \
            -n 0.0.0.0 --port $${GRAPH_PORT_DEVNET:-5051} \
-           --schema public --enhance-graphiql --watch \
+           --schema public --enhance-graphiql --watch --cors \
            -c \"$$DB_DSN\""
       ]
     ports:
@@ -120,7 +120,7 @@ services:
          psql \"$$DB_DSN\" -v ON_ERROR_STOP=1 -c \"COMMENT ON TABLE public.cursors IS E'@omit';\" || true && \
          npx --yes postgraphile \
            -n 0.0.0.0 --port $${GRAPH_PORT_MAINNET:-5050} \
-           --schema public --enhance-graphiql --watch \
+           --schema public --enhance-graphiql --watch --cors \
            -c \"$$DB_DSN\""
       ]
     ports:

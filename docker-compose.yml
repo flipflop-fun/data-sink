@@ -86,15 +86,13 @@ services:
         "sh", "-lc",
         "apk add --no-cache postgresql-client && \
          DB_DSN=\"postgres://$$DB_USER:$$DB_PASSWORD@$${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}?sslmode=$${DB_SSLMODE:-disable}&options=-c%20statement_timeout%3D15000%20-c%20idle_in_transaction_session_timeout%3D5000\" && \
+         export DB_DSN && \
          until pg_isready -h \"$${DB_HOST:-postgres}\" -p \"$${DB_PORT:-5432}\" -U \"$$DB_USER\" -d \"$${DB_NAME:-substreams}\"; do \
            echo 'waiting for postgres...'; sleep 2; \
          done && \
          echo \"postgres is ready at $${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}\" && \
          psql \"$$DB_DSN\" -v ON_ERROR_STOP=1 -c \"COMMENT ON TABLE public.cursors IS E'@omit';\" || true && \
-         npx --yes postgraphile \
-           -n 0.0.0.0 --port $${GRAPH_PORT_DEVNET:-5051} \
-           --schema public --enhance-graphiql --watch --cors --disable-query-log \
-           -c \"$$DB_DSN\""
+         npx -y -p postgraphile -p express -p cors node -e 'const express=require(\"express\");const cors=require(\"cors\");const {postgraphile}=require(\"postgraphile\");const app=express();const methods=[\"HEAD\",\"GET\",\"POST\",\"OPTIONS\"];const originsEnv=process.env.GRAPH_CORS||\"*\";const isWildcard=originsEnv===\"*\";const origins=isWildcard?true:originsEnv.split(/[,\\s]+/).filter(Boolean);const allowedHeaders=[\"Origin\",\"X-Requested-With\",\"Accept\",\"Authorization\",\"X-Apollo-Tracing\",\"Content-Type\",\"Content-Length\",\"X-PostGraphile-Explain\"];const exposedHeaders=[\"X-GraphQL-Event-Stream\",\"Content-Length\",\"X-Request-Id\"];const corsOptions={origin:origins,methods:methods.join(\", \"),credentials:!isWildcard,allowedHeaders:allowedHeaders,exposedHeaders:exposedHeaders};app.use((req,res,next)=>{res.header(\"Access-Control-Allow-Methods\",methods.join(\", \"));res.header(\"Access-Control-Expose-Headers\",exposedHeaders.join(\", \"));res.header(\"Vary\",\"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\");next();});app.options(\"/graphql\",(req,res)=>{const origin=req.headers.origin;if(isWildcard){res.header(\"Access-Control-Allow-Origin\",\"*\");}else if(origin&&Array.isArray(origins)&&origins.includes(origin)){res.header(\"Access-Control-Allow-Origin\",origin);res.header(\"Access-Control-Allow-Credentials\",\"true\");}res.header(\"Access-Control-Allow-Methods\",methods.join(\", \"));res.header(\"Access-Control-Allow-Headers\",allowedHeaders.join(\", \"));return res.status(204).end();});app.use(cors(corsOptions));app.use(\"/graphql\",postgraphile(process.env.DB_DSN,(process.env.DB_SCHEMA||\"public\").split(/[,\\s]+/),{graphiql:true,enhanceGraphiql:true,disableQueryLog:true}));app.get(\"/health\",(req,res)=>res.status(200).send(\"ok\"));const port=Number(process.env.PORT||process.env.GRAPH_PORT_DEVNET||5051);app.listen(port,()=>console.log(\"Graph (devnet) on\",port));'"
       ]
     ports:
       - "${GRAPH_PORT_DEVNET:-5051}:${GRAPH_PORT_DEVNET:-5051}"
@@ -117,15 +115,13 @@ services:
         "sh", "-lc",
         "apk add --no-cache postgresql-client && \
          DB_DSN=\"postgres://$$DB_USER:$$DB_PASSWORD@$${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}?sslmode=$${DB_SSLMODE:-disable}&options=-c%20statement_timeout%3D15000%20-c%20idle_in_transaction_session_timeout%3D5000\" && \
+         export DB_DSN && \
          until pg_isready -h \"$${DB_HOST:-postgres}\" -p \"$${DB_PORT:-5432}\" -U \"$$DB_USER\" -d \"$${DB_NAME:-substreams}\"; do \
            echo 'waiting for postgres...'; sleep 2; \
          done && \
          echo \"postgres is ready at $${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}\" && \
          psql \"$$DB_DSN\" -v ON_ERROR_STOP=1 -c \"COMMENT ON TABLE public.cursors IS E'@omit';\" || true && \
-         npx --yes postgraphile \
-           -n 0.0.0.0 --port $${GRAPH_PORT_MAINNET:-5050} \
-           --schema public --enhance-graphiql --watch --cors --disable-query-log \
-           -c \"$$DB_DSN\""
+         npx -y -p postgraphile -p express -p cors node -e 'const express=require(\"express\");const cors=require(\"cors\");const {postgraphile}=require(\"postgraphile\");const app=express();const methods=[\"HEAD\",\"GET\",\"POST\",\"OPTIONS\"];const originsEnv=process.env.GRAPH_CORS||\"*\";const isWildcard=originsEnv===\"*\";const origins=isWildcard?true:originsEnv.split(/[,\\s]+/).filter(Boolean);const allowedHeaders=[\"Origin\",\"X-Requested-With\",\"Accept\",\"Authorization\",\"X-Apollo-Tracing\",\"Content-Type\",\"Content-Length\",\"X-PostGraphile-Explain\"];const exposedHeaders=[\"X-GraphQL-Event-Stream\",\"Content-Length\",\"X-Request-Id\"];const corsOptions={origin:origins,methods:methods.join(\", \"),credentials:!isWildcard,allowedHeaders:allowedHeaders,exposedHeaders:exposedHeaders};app.use((req,res,next)=>{res.header(\"Access-Control-Allow-Methods\",methods.join(\", \"));res.header(\"Access-Control-Expose-Headers\",exposedHeaders.join(\", \"));res.header(\"Vary\",\"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\");next();});app.options(\"/graphql\",(req,res)=>{const origin=req.headers.origin;if(isWildcard){res.header(\"Access-Control-Allow-Origin\",\"*\");}else if(origin&&Array.isArray(origins)&&origins.includes(origin)){res.header(\"Access-Control-Allow-Origin\",origin);res.header(\"Access-Control-Allow-Credentials\",\"true\");}res.header(\"Access-Control-Allow-Methods\",methods.join(\", \"));res.header(\"Access-Control-Allow-Headers\",allowedHeaders.join(\", \"));return res.status(204).end();});app.use(cors(corsOptions));app.use(\"/graphql\",postgraphile(process.env.DB_DSN,(process.env.DB_SCHEMA||\"public\").split(/[,\\s]+/),{graphiql:true,enhanceGraphiql:true,disableQueryLog:true}));app.get(\"/health\",(req,res)=>res.status(200).send(\"ok\"));const port=Number(process.env.PORT||process.env.GRAPH_PORT_MAINNET||5050);app.listen(port,()=>console.log(\"Graph (mainnet) on\",port));'"
       ]
     ports:
       - "${GRAPH_PORT_MAINNET:-5050}:${GRAPH_PORT_MAINNET:-5050}"

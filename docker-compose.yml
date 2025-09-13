@@ -89,9 +89,10 @@ services:
          done && \
          echo \"postgres is ready at $${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}\" && \
          psql \"$$DB_DSN\" -v ON_ERROR_STOP=1 -c \"COMMENT ON TABLE public.cursors IS E'@omit';\" || true && \
-         npx --yes postgraphile \
+         npx --yes -p postgraphile -p postgraphile-plugin-connection-filter postgraphile \
            -n 0.0.0.0 --port $${GRAPH_PORT_DEVNET:-5051} \
            --schema public --enhance-graphiql --watch --cors \
+           --append-plugins postgraphile-plugin-connection-filter \
            -c \"$$DB_DSN\""
       ]
     ports:
@@ -118,9 +119,10 @@ services:
          done && \
          echo \"postgres is ready at $${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}\" && \
          psql \"$$DB_DSN\" -v ON_ERROR_STOP=1 -c \"COMMENT ON TABLE public.cursors IS E'@omit';\" || true && \
-         npx --yes postgraphile \
+         npx --yes -p postgraphile -p postgraphile-plugin-connection-filter postgraphile \
            -n 0.0.0.0 --port $${GRAPH_PORT_MAINNET:-5050} \
            --schema public --enhance-graphiql --watch --cors \
+           --append-plugins postgraphile-plugin-connection-filter \
            -c \"$$DB_DSN\""
       ]
     ports:

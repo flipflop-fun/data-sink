@@ -135,12 +135,10 @@ services:
     depends_on:
       - flipflop-graph-mainnet
       - flipflop-graph-devnet
-    # 与其他服务同网络即可（默认即可）
-  restart: unless-stopped
 
 volumes:
   postgres-data: {}
   devnet-data: {}
   mainnet-data: {}
-  caddy_data:
-  caddy_config:
+  caddy_data: {}
+  caddy_config: {}

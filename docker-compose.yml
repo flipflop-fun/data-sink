@@ -76,6 +76,8 @@ services:
     environment:
       # 仅覆盖 DB_NAME，其他 DB_* 从 .env 继承
       DB_NAME: ${DB_NAME_DEVNET}
+      UV_THREADPOOL_SIZE: "64"
+      NODE_OPTIONS: "--max-old-space-size=1024"
     depends_on:
       - postgres
       - flipflop-indexer-devnet
@@ -83,16 +85,15 @@ services:
       [
         "sh", "-lc",
         "apk add --no-cache postgresql-client && \
-         DB_DSN=\"postgres://$$DB_USER:$$DB_PASSWORD@$${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}?sslmode=$${DB_SSLMODE:-disable}\" && \
+         DB_DSN=\"postgres://$$DB_USER:$$DB_PASSWORD@$${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}?sslmode=$${DB_SSLMODE:-disable}&options=-c%20statement_timeout%3D15000%20-c%20idle_in_transaction_session_timeout%3D5000\" && \
          until pg_isready -h \"$${DB_HOST:-postgres}\" -p \"$${DB_PORT:-5432}\" -U \"$$DB_USER\" -d \"$${DB_NAME:-substreams}\"; do \
            echo 'waiting for postgres...'; sleep 2; \
          done && \
          echo \"postgres is ready at $${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}\" && \
          psql \"$$DB_DSN\" -v ON_ERROR_STOP=1 -c \"COMMENT ON TABLE public.cursors IS E'@omit';\" || true && \
-         npx --yes -p postgraphile -p postgraphile-plugin-connection-filter postgraphile \
+         npx --yes postgraphile \
            -n 0.0.0.0 --port $${GRAPH_PORT_DEVNET:-5051} \
-           --schema public --enhance-graphiql --watch --cors \
-           --append-plugins postgraphile-plugin-connection-filter \
+           --schema public --enhance-graphiql --watch --cors --disable-query-log \
            -c \"$$DB_DSN\""
       ]
     ports:
@@ -107,22 +108,23 @@ services:
       - .env
     environment:
       DB_NAME: ${DB_NAME_MAINNET}
+      UV_THREADPOOL_SIZE: "64"
+      NODE_OPTIONS: "--max-old-space-size=1024"
     depends_on:
       - postgres
     command:
       [
         "sh", "-lc",
         "apk add --no-cache postgresql-client && \
-         DB_DSN=\"postgres://$$DB_USER:$$DB_PASSWORD@$${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}?sslmode=$${DB_SSLMODE:-disable}\" && \
+         DB_DSN=\"postgres://$$DB_USER:$$DB_PASSWORD@$${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}?sslmode=$${DB_SSLMODE:-disable}&options=-c%20statement_timeout%3D15000%20-c%20idle_in_transaction_session_timeout%3D5000\" && \
          until pg_isready -h \"$${DB_HOST:-postgres}\" -p \"$${DB_PORT:-5432}\" -U \"$$DB_USER\" -d \"$${DB_NAME:-substreams}\"; do \
            echo 'waiting for postgres...'; sleep 2; \
          done && \
          echo \"postgres is ready at $${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}\" && \
          psql \"$$DB_DSN\" -v ON_ERROR_STOP=1 -c \"COMMENT ON TABLE public.cursors IS E'@omit';\" || true && \
-         npx --yes -p postgraphile -p postgraphile-plugin-connection-filter postgraphile \
+         npx --yes postgraphile \
            -n 0.0.0.0 --port $${GRAPH_PORT_MAINNET:-5050} \
-           --schema public --enhance-graphiql --watch --cors \
-           --append-plugins postgraphile-plugin-connection-filter \
+           --schema public --enhance-graphiql --watch --cors --disable-query-log \
            -c \"$$DB_DSN\""
       ]
     ports:

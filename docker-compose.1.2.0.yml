@@ -67,22 +67,20 @@ services:
       - mainnet-data:/var/lib/substreams
     restart: unless-stopped
 
-  # Graph server for devnet (Node + Express + PostGraphile)
+  # Graph server for devnet (PostGraphile)
   flipflop-graph-devnet:
     image: node:18-alpine
     container_name: flipflop-graph-devnet
     env_file:
       - .env
     environment:
+      # 仅覆盖 DB_NAME，其他 DB_* 从 .env 继承
       DB_NAME: ${DB_NAME_DEVNET}
       UV_THREADPOOL_SIZE: "64"
       NODE_OPTIONS: "--max-old-space-size=1024"
-      GRAPH_PORT: ${GRAPH_PORT_DEVNET:-5051}
     depends_on:
       - postgres
       - flipflop-indexer-devnet
-    volumes:
-      - ./:/app:ro
     command:
       [
         # 1- Add option on DB_DSN to support more connections
@@ -91,20 +89,23 @@ services:
         # 4- Make sure the `in` is available
         "sh", "-lc",
         "apk add --no-cache postgresql-client && \
-         DB_DSN=\"postgres://$$DB_USER:$$DB_PASSWORD@$${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}?sslmode=$${DB_SSLMODE:-disable}&connect_timeout=5&keepalives=1&keepalives_idle=30&keepalives_interval=10&keepalives_count=3\" && \
+         DB_DSN=\"postgres://$$DB_USER:$$DB_PASSWORD@$${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}?sslmode=$${DB_SSLMODE:-disable}&options=-c%20statement_timeout%3D15000%20-c%20idle_in_transaction_session_timeout%3D5000\" && \
          until pg_isready -h \"$${DB_HOST:-postgres}\" -p \"$${DB_PORT:-5432}\" -U \"$$DB_USER\" -d \"$${DB_NAME:-substreams}\"; do \
            echo 'waiting for postgres...'; sleep 2; \
          done && \
          echo \"postgres is ready at $${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}\" && \
          psql \"$$DB_DSN\" -v ON_ERROR_STOP=1 -c \"COMMENT ON TABLE public.cursors IS E'@omit';\" || true && \
-         npm --prefix /opt/graph --silent --no-progress --no-audit i express postgraphile postgraphile-plugin-connection-filter && \
-         NODE_PATH=/opt/graph/node_modules node /app/docker/graph-server.js"
+         npx --yes -p postgraphile -p postgraphile-plugin-connection-filter postgraphile \
+           -n 0.0.0.0 --port $${GRAPH_PORT_DEVNET:-5051} \
+           --schema public --enhance-graphiql --watch --cors \
+           --append-plugins postgraphile-plugin-connection-filter \
+           -c \"$$DB_DSN\""
       ]
     ports:
       - "${GRAPH_PORT_DEVNET:-5051}:${GRAPH_PORT_DEVNET:-5051}"
     restart: unless-stopped
 
-  # Graph server for mainnet (Node + Express + PostGraphile)
+  # Graph server for mainnet (PostGraphile)
   flipflop-graph-mainnet:
     image: node:18-alpine
     container_name: flipflop-graph-mainnet
@@ -114,24 +115,24 @@ services:
       DB_NAME: ${DB_NAME_MAINNET}
       UV_THREADPOOL_SIZE: "64"
       NODE_OPTIONS: "--max-old-space-size=1024"
-      GRAPH_PORT: ${GRAPH_PORT_MAINNET:-5050}
     depends_on:
       - postgres
       - flipflop-indexer-mainnet
-    volumes:
-      - ./:/app:ro
     command:
       [
         "sh", "-lc",
         "apk add --no-cache postgresql-client && \
-         DB_DSN=\"postgres://$$DB_USER:$$DB_PASSWORD@$${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}?sslmode=$${DB_SSLMODE:-disable}&connect_timeout=5&keepalives=1&keepalives_idle=30&keepalives_interval=10&keepalives_count=3\" && \
+         DB_DSN=\"postgres://$$DB_USER:$$DB_PASSWORD@$${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}?sslmode=$${DB_SSLMODE:-disable}&options=-c%20statement_timeout%3D15000%20-c%20idle_in_transaction_session_timeout%3D5000\" && \
          until pg_isready -h \"$${DB_HOST:-postgres}\" -p \"$${DB_PORT:-5432}\" -U \"$$DB_USER\" -d \"$${DB_NAME:-substreams}\"; do \
            echo 'waiting for postgres...'; sleep 2; \
          done && \
          echo \"postgres is ready at $${DB_HOST:-postgres}:$${DB_PORT:-5432}/$${DB_NAME:-substreams}\" && \
          psql \"$$DB_DSN\" -v ON_ERROR_STOP=1 -c \"COMMENT ON TABLE public.cursors IS E'@omit';\" || true && \
-         npm --prefix /opt/graph --silent --no-progress --no-audit i express postgraphile postgraphile-plugin-connection-filter && \
-         NODE_PATH=/opt/graph/node_modules node /app/docker/graph-server.js"
+         npx --yes -p postgraphile -p postgraphile-plugin-connection-filter postgraphile \
+           -n 0.0.0.0 --port $${GRAPH_PORT_MAINNET:-5050} \
+           --schema public --enhance-graphiql --watch --cors \
+           --append-plugins postgraphile-plugin-connection-filter \
+           -c \"$$DB_DSN\""
       ]
     ports:
       - "${GRAPH_PORT_MAINNET:-5050}:${GRAPH_PORT_MAINNET:-5050}"

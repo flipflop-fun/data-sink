@@ -11,3 +11,4 @@ replay.log
 
 .env
 node_modules
+.graph_local
